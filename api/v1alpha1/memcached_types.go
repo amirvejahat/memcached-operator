@@ -31,7 +31,7 @@ type MemcachedSpec struct {
 	// Specify name of memcached cluster
 	Name string `json:"name,omitempty"`
 	// Specify the size of the cluster
-	Size int `json:"size,omitempty"`
+	Size int32 `json:"size,omitempty"`
 }
 
 // MemcachedStatus defines the observed state of Memcached

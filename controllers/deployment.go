@@ -51,14 +51,13 @@ func (r *MemcachedReconciler) ensureDeployment(request reconcile.Request,
 func (r *MemcachedReconciler) backendDeployment(v *cachev1alpha1.Memcached) *appsv1.Deployment {
 
 	labels := labels(v)
-	size := int32(1)
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "memcachedpod1",
+			Name:      v.Name,
 			Namespace: v.Namespace,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &size,
+			Replicas: &v.Spec.Size,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: labels,
 			},
@@ -68,7 +67,7 @@ func (r *MemcachedReconciler) backendDeployment(v *cachev1alpha1.Memcached) *app
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
-						Name:            "memcachdpodname",
+						Name:            v.Name,
 						Image:           "memcached",
 						ImagePullPolicy: corev1.PullAlways,
 						Ports: []corev1.ContainerPort{{

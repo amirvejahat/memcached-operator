@@ -77,6 +77,30 @@ func (r *MemcachedReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	// 	return *result, err
 	// }
 
+	// Ensure the deployment size is the same as the spec
+	size := instance.Spec.Size
+	if *found.Spec.Replicas != size {
+		found.Spec.Replicas = &size
+		err = r.Update(ctx, found)
+		if err != nil {
+			log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+			return ctrl.Result{}, err
+		}
+		// Spec updated - return and requeue
+		return ctrl.Result{Requeue: true}, nil
+	}
+
+	for _, annotaion := range found.ObjectMeta.Annotations {
+		if annotaion != "memcached" {
+			found.ObjectMeta.Annotations["managed-by"] = "memcached"
+			err = r.Update(ctx, found)
+			if err != nil {
+				log.Error(err, "Failed to update Deployment", "Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
+				return ctrl.Result{}, err
+			}
+		}
+	}
+
 	log.Info("Skip reconcile: Deployment and service already exists",
 		"Deployment.Namespace", found.Namespace, "Deployment.Name", found.Name)
 	return ctrl.Result{}, nil
